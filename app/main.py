@@ -1,38 +1,11 @@
-import json
 import os
 
 from dotenv import load_dotenv
 from openai import OpenAI
 
-from app.tools.registry import (
-    get_tool_definitions,
-    get_tool_function,
-)
+from app.tools.executor import execute_tool
+from app.tools.registry import get_tool_definitions
 
-
-def execute_tool(tool_call):
-    """Execute a tool requested by the model."""
-
-    try:
-        tool_function = get_tool_function(tool_call.name)
-
-        arguments = json.loads(tool_call.arguments)
-
-        result = tool_function(**arguments)
-
-        print(f"\nTool called: {tool_call.name}")
-        print(f"Arguments: {arguments}")
-        print(f"Tool result: {result}")
-
-        return str(result)
-
-    except Exception as exc:
-        error_message = f"Tool error: {exc}"
-
-        print(f"\nTool called: {tool_call.name}")
-        print(f"Tool error: {exc}")
-
-        return error_message
 
 def run_agent(client, user_task):
     """Run the agent until it produces a final answer."""
@@ -66,7 +39,6 @@ def run_agent(client, user_task):
             if item.type == "function_call"
         ]
 
-        # No tool call means the agent has produced its answer.
         if not tool_calls:
             return response.output_text
 
@@ -83,47 +55,6 @@ def run_agent(client, user_task):
                 }
             )
 
-        # Send tool results back to the model.
-        response = client.responses.create(
-            model="gpt-5-mini",
-            previous_response_id=response.id,
-            input=tool_outputs,
-            tools=tools,
-        )
-
-    raise RuntimeError(
-        f"Agent stopped after {max_iterations} iterations."
-    )
-
-    max_iterations = 5
-
-    for iteration in range(max_iterations):
-        print(f"\n--- Agent iteration {iteration + 1} ---")
-
-        tool_calls = [
-            item
-            for item in response.output
-            if item.type == "function_call"
-        ]
-
-        # No tool call means the agent has produced its answer.
-        if not tool_calls:
-            return response.output_text
-
-        tool_outputs = []
-
-        for tool_call in tool_calls:
-            result = execute_tool(tool_call)
-
-            tool_outputs.append(
-                {
-                    "type": "function_call_output",
-                    "call_id": tool_call.call_id,
-                    "output": result,
-                }
-            )
-
-        # Send tool results back to the model.
         response = client.responses.create(
             model="gpt-5-mini",
             previous_response_id=response.id,

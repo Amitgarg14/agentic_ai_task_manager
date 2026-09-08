@@ -1,6 +1,6 @@
 import pytest
 
-from app.main import execute_tool
+from app.tools.executor import execute_tool
 from app.tools.calculator import calculate
 from app.tools.datetime_tool import get_current_datetime
 from app.tools.registry import (
