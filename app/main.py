@@ -34,15 +34,57 @@ def run_agent(client, user_task):
     response = client.responses.create(
         model="gpt-5-mini",
         input=(
-            "You are an agent with access to tools.\n"
-            "When the user's task involves arithmetic, you MUST use "
-            "the calculate tool instead of calculating the result yourself.\n"
-            "For multi-step arithmetic, use the tool one step at a time "
-            "and use the previous tool result for the next calculation.\n\n"
+            "You are an AI agent with access to tools.\n\n"
+            "Available tools:\n"
+            "- calculate: Use for arithmetic calculations.\n"
+            "- get_current_datetime: Use when the user asks for "
+            "the current date, current time, today, or now.\n\n"
+            "Choose tools when they are useful for completing the "
+            "user's task. For multi-step tasks, use previous tool "
+            "results as inputs to subsequent tool calls.\n\n"
             f"User task:\n{user_task}"
         ),
         tools=tools,
-        tool_choice="required",
+    )
+
+    max_iterations = 5
+
+    for iteration in range(max_iterations):
+        print(f"\n--- Agent iteration {iteration + 1} ---")
+
+        tool_calls = [
+            item
+            for item in response.output
+            if item.type == "function_call"
+        ]
+
+        # No tool call means the agent has produced its answer.
+        if not tool_calls:
+            return response.output_text
+
+        tool_outputs = []
+
+        for tool_call in tool_calls:
+            result = execute_tool(tool_call)
+
+            tool_outputs.append(
+                {
+                    "type": "function_call_output",
+                    "call_id": tool_call.call_id,
+                    "output": result,
+                }
+            )
+
+        # Send tool results back to the model.
+        response = client.responses.create(
+            model="gpt-5-mini",
+            previous_response_id=response.id,
+            input=tool_outputs,
+            tools=tools,
+        )
+
+    raise RuntimeError(
+        f"Agent stopped after {max_iterations} iterations."
     )
 
     max_iterations = 5

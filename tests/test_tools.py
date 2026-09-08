@@ -59,3 +59,28 @@ def test_registry_contains_datetime_tool():
     tool_function = get_tool_function("get_current_datetime")
 
     assert tool_function is get_current_datetime
+
+def test_registry_contains_datetime_definition():
+    definitions = get_tool_definitions()
+
+    datetime_definition = next(
+        tool
+        for tool in definitions
+        if tool["name"] == "get_current_datetime"
+    )
+
+    assert datetime_definition["type"] == "function"
+
+
+def test_registry_contains_both_tools():
+    definitions = get_tool_definitions()
+
+    tool_names = {
+        tool["name"]
+        for tool in definitions
+    }
+
+    assert tool_names == {
+        "calculate",
+        "get_current_datetime",
+    }    
