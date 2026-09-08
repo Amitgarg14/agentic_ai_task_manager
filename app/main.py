@@ -13,18 +13,26 @@ from app.tools.registry import (
 def execute_tool(tool_call):
     """Execute a tool requested by the model."""
 
-    tool_function = get_tool_function(tool_call.name)
+    try:
+        tool_function = get_tool_function(tool_call.name)
 
-    arguments = json.loads(tool_call.arguments)
+        arguments = json.loads(tool_call.arguments)
 
-    result = tool_function(**arguments)
+        result = tool_function(**arguments)
 
-    print(f"\nTool called: {tool_call.name}")
-    print(f"Arguments: {arguments}")
-    print(f"Tool result: {result}")
+        print(f"\nTool called: {tool_call.name}")
+        print(f"Arguments: {arguments}")
+        print(f"Tool result: {result}")
 
-    return str(result)
+        return str(result)
 
+    except Exception as exc:
+        error_message = f"Tool error: {exc}"
+
+        print(f"\nTool called: {tool_call.name}")
+        print(f"Tool error: {exc}")
+
+        return error_message
 
 def run_agent(client, user_task):
     """Run the agent until it produces a final answer."""

@@ -1,5 +1,6 @@
 import pytest
 
+from app.main import execute_tool
 from app.tools.calculator import calculate
 from app.tools.datetime_tool import get_current_datetime
 from app.tools.registry import (
@@ -84,3 +85,13 @@ def test_registry_contains_both_tools():
         "calculate",
         "get_current_datetime",
     }    
+
+class FakeToolCall:
+    name = "calculate"
+    arguments = '{"a": 100, "b": 0, "operation": "divide"}'
+
+
+def test_execute_tool_handles_tool_error():
+    result = execute_tool(FakeToolCall())
+
+    assert result == "Tool error: Cannot divide by zero."    
