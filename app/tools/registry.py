@@ -1,9 +1,11 @@
 from app.tools.calculator import calculate
+from app.tools.datetime_tool import get_current_datetime
 
 
 # Map tool names to Python functions.
 TOOL_FUNCTIONS = {
     "calculate": calculate,
+    "get_current_datetime": get_current_datetime,
 }
 
 
@@ -39,6 +41,21 @@ TOOL_DEFINITIONS = [
                 }
             },
             "required": ["a", "b", "operation"],
+            "additionalProperties": False
+        }
+    },
+    {
+        "type": "function",
+        "name": "get_current_datetime",
+        "description": (
+            "Get the current local date and time. "
+            "Use this tool when the user asks for the current "
+            "date, current time, today, or now."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {},
+            "required": [],
             "additionalProperties": False
         }
     }

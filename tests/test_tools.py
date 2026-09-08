@@ -1,6 +1,7 @@
 import pytest
 
 from app.tools.calculator import calculate
+from app.tools.datetime_tool import get_current_datetime
 from app.tools.registry import (
     get_tool_definitions,
     get_tool_function,
@@ -45,3 +46,16 @@ def test_registry_returns_calculate_definition():
     assert len(definitions) >= 1
     assert definitions[0]["name"] == "calculate"
     assert definitions[0]["type"] == "function"
+
+
+def test_get_current_datetime_returns_string():
+    result = get_current_datetime()
+
+    assert isinstance(result, str)
+    assert result
+
+
+def test_registry_contains_datetime_tool():
+    tool_function = get_tool_function("get_current_datetime")
+
+    assert tool_function is get_current_datetime
